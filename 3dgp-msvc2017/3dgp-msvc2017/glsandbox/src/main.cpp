@@ -1,5 +1,7 @@
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 #include <exception>
 
@@ -8,7 +10,6 @@
 
 int main(int argc, char *argv[])
 {
-	
   if(SDL_Init(SDL_INIT_VIDEO) < 0)
   {
     throw std::exception();
@@ -92,16 +93,18 @@ int main(int argc, char *argv[])
 
 
   const GLchar *vertexShaderSrc =
-	  "attribute vec3 a_Position;           " \
-	  "attribute vec4 a_Color;               " \
-	  "                                      " \
-	  "varying vec4 v_Color;                 " \
-	  "                                      " \
-	  "void main()                           " \
-	  "{                                     " \
-	  " gl_Position = vec4(a_Position, 1.0); " \
-	  " v_Color = a_Color;                   " \
-	  "}                                     ";
+	  "attribute vec3 a_Position;                                     " \
+	  "attribute vec4 a_Color;                                        " \
+	  "uniform mat4 u_Projection;                                     " \
+	  "uniform mat4 u_Model;                                          " \
+	  "                                                               " \
+	  "varying vec4 v_Color;                                          " \
+	  "                                                               " \
+	  "void main()                                                    " \
+	  "{                                                              " \
+	  " gl_Position = u_Projection * u_Model * vec4(a_Position, 1.0); " \
+	  " v_Color = a_Color;                                            " \
+	  "}                                                              ";
 
   GLuint vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vertexShaderId, 1, &vertexShaderSrc, NULL);
@@ -152,6 +155,9 @@ int main(int argc, char *argv[])
   glDetachShader(programId, fragmentShaderId);
   glDeleteShader(fragmentShaderId);
 
+  GLint modelLoc = glGetUniformLocation(programId, "u_Model");
+  GLint projectionLoc = glGetUniformLocation(programId, "u_Projection");
+
 
   GLint colorUniformId = glGetUniformLocation(programId, "u_Color");
 
@@ -160,10 +166,11 @@ int main(int argc, char *argv[])
 	  throw std::exception();
   }
 
+  float angle = 0;
+
   while (!quit)
   {
 	  SDL_Event event = { 0 };
-
 
 	  while (SDL_PollEvent(&event))
 	  {
@@ -173,15 +180,58 @@ int main(int argc, char *argv[])
 		  }
 	  }
 
-	  glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+	  int width = 0;
+	  int height = 0;
+
+	  SDL_GetWindowSize(window, &width, &height);
+
+	  glViewport(0, 0, width, height);
+
+	  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	  glClear(GL_COLOR_BUFFER_BIT);
 
 	  glUseProgram(programId);
-	  glUniform4f(colorUniformId, 1, 0, 0, 0); //To change color 
-	  glUseProgram(0);
 
-	  glUseProgram(programId);
+	  glUniform4f(colorUniformId, 1, 0, 0, 0); //To change color 
 	  glBindVertexArray(vaoId);
+
+
+	  //Prepare the perspective projection matrix
+	  glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+
+	  //Prepare the model matrix
+	  glm::mat4 model(1.0f);
+	  model = glm::translate(model, glm::vec3(0, 0, -2.5f));
+	  model = glm::rotate(model, glm::radians(angle), glm::vec3(1, 0, 0)); //vec3(x, y, z) used to change rotate direction
+	  model = glm::rotate(model, glm::radians(angle / 2.0f), glm::vec3(0, 0, 1));
+	  model = glm::rotate(model, glm::radians(angle), glm::vec3(0, 1, 0));
+
+	  //Increase the float angle so next frame the triangle rotates further
+	  angle += 10.0f;
+
+	  //Make sure the current program is bound
+
+	  //Upload the model matrix
+	  glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+	  //Upload the projection matrix
+	  glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+	  glDrawArrays(GL_TRIANGLES, 0, 3);
+
+	  //Prepare the orthographic projection matrix
+	  projection = glm::ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT, 0.0f, 1.0f);
+
+	  //Prepare model matrix for orthographic projection
+	  model = glm::mat4(1.0f);
+	  model = glm::translate(model, glm::vec3(100, WINDOW_HEIGHT - 100, 0));
+	  model = glm::scale(model, glm::vec3(100, 100, 1));
+
+	  //Upload the model matrix
+	  glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+	  //Upload the projection matrix
+	  glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 	  glDrawArrays(GL_TRIANGLES, 0, 3);
 
