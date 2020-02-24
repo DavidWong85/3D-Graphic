@@ -202,12 +202,12 @@ int main(int argc, char *argv[])
 	  //Prepare the model matrix
 	  glm::mat4 model(1.0f);
 	  model = glm::translate(model, glm::vec3(0, 0, -2.5f));
-	  model = glm::rotate(model, glm::radians(angle), glm::vec3(1, 0, 0)); //vec3(x, y, z) used to change rotate direction
-	  model = glm::rotate(model, glm::radians(angle / 2.0f), glm::vec3(0, 0, 1));
-	  model = glm::rotate(model, glm::radians(angle), glm::vec3(0, 1, 0));
+	  //model = glm::rotate(model, glm::radians(angle), glm::vec3(1, 0, 0)); //vec3(x, y, z) used to change rotate direction
+	  model = glm::rotate(model, glm::radians(angle), glm::vec3(0, 0, 1));
+	  //model = glm::rotate(model, glm::radians(angle), glm::vec3(0, 1, 0));
 
 	  //Increase the float angle so next frame the triangle rotates further
-	  angle += 10.0f;
+	  angle += 45.0f;
 
 	  //Make sure the current program is bound
 
