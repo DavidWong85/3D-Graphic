@@ -5,6 +5,9 @@
 
 #include <exception>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 
@@ -35,10 +38,21 @@ int main(int argc, char *argv[])
 	  0.5f, -0.5f, 0.0f
   };
 
+  
   const GLfloat colors[] = {
   1.0f, 0.0f, 0.0f, 1.0f,
   0.0f, 1.0f, 0.0f, 1.0f,
   0.0f, 0.0f, 1.0f, 1.0f,
+  };
+  
+
+  const GLfloat texCoords[] = {
+	  0.0f, 0.0f,
+	  0.0f, 1.0f,
+	  1.0f, 1.0f,
+	  1.0f, 1.0f,
+	  1.0f, 0.0f,
+	  0.0f, 0.0f
   };
 
   GLuint positionsVboId = 0;
@@ -69,41 +83,70 @@ int main(int argc, char *argv[])
 
   glEnableVertexAttribArray(0); //For streaming VBO (Positions)
 
-  GLuint colorsVboId = 0;
+  
+  GLuint textureVboId = 0;
 
-  glGenBuffers(1, &colorsVboId);
+  glGenBuffers(1, &textureVboId);
 
-  if (!colorsVboId)
+  if (!textureVboId)
   {
 	  throw std::exception();
   }
 
-  glBindBuffer(GL_ARRAY_BUFFER, colorsVboId);
+  glBindBuffer(GL_ARRAY_BUFFER, textureVboId);
 
-  glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(texCoords), texCoords, GL_STATIC_DRAW);
 
-  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)0);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
 
   glEnableVertexAttribArray(1);
   
 
+  int w = 0;
+  int h = 0;
+
+  unsigned char *data = stbi_load("image.png", &w, &h, NULL, 4);
+
+  if (!data)
+  {
+	 
+	  throw std::exception();
+  }
+
+  GLuint textureId = 0;
+  glGenTextures(1, &textureId);
+
+  if (!textureId)
+  {
+	  throw std::exception();
+  }
+
+  glBindTexture(GL_TEXTURE_2D, textureId);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+  free(data);
+
+  glGenerateMipmap(GL_TEXTURE_2D);
+
   //Reset The State
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindTexture(GL_TEXTURE_2D, 0);
   glBindVertexArray(0);
 
 
   const GLchar *vertexShaderSrc =
 	  "attribute vec3 a_Position;                                     " \
-	  "attribute vec4 a_Color;                                        " \
+	  "attribute vec2 a_TexCoord;                                     " \
 	  "uniform mat4 u_Projection;                                     " \
 	  "uniform mat4 u_Model;                                          " \
 	  "                                                               " \
-	  "varying vec4 v_Color;                                          " \
+	  "varying vec2 v_TexCoord;                                       " \
 	  "                                                               " \
 	  "void main()                                                    " \
 	  "{                                                              " \
 	  " gl_Position = u_Projection * u_Model * vec4(a_Position, 1.0); " \
-	  " v_Color = a_Color;                                            " \
+	  " v_TexCoord = a_TexCoord;                                      " \
 	  "}                                                              ";
 
   GLuint vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
@@ -118,12 +161,15 @@ int main(int argc, char *argv[])
   }
 
   const GLchar *fragmentShaderSrc =
-	  "varying vec4 v_Color;                 " \
-	  "uniform vec4 u_Color;                 " \
-	  "void main()                           " \
-	  "{                                     " \
-	  " gl_FragColor = v_Color + u_Color;    " \
-	  "}                                     ";
+	  "uniform sampler2D u_Texture;                 " \
+	  "                                             " \
+	  "varying vec2 v_TexCoord;                     " \
+	  "                                             " \
+	  "void main()                                  " \
+	  "{                                            " \
+	  "vec4 tex = texture2D(u_Texture, v_TexCoord); " \
+	  "gl_FragColor = tex;                          " \
+	  "}                                            ";
 
   GLuint fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(fragmentShaderId, 1, &fragmentShaderSrc, NULL);
@@ -140,7 +186,7 @@ int main(int argc, char *argv[])
   glAttachShader(programId, fragmentShaderId);
 
   glBindAttribLocation(programId, 0, "a_Position");
-  glBindAttribLocation(programId, 1, "a_Color");
+  glBindAttribLocation(programId, 1, "a_TexCoord");
 
   glLinkProgram(programId);
   glGetProgramiv(programId, GL_LINK_STATUS, &success);
@@ -157,14 +203,6 @@ int main(int argc, char *argv[])
 
   GLint modelLoc = glGetUniformLocation(programId, "u_Model");
   GLint projectionLoc = glGetUniformLocation(programId, "u_Projection");
-
-
-  GLint colorUniformId = glGetUniformLocation(programId, "u_Color");
-
-  if (colorUniformId == -1)
-  {
-	  throw std::exception();
-  }
 
   float angle = 0;
 
@@ -187,27 +225,39 @@ int main(int argc, char *argv[])
 
 	  glViewport(0, 0, width, height);
 
-	  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	  glClear(GL_COLOR_BUFFER_BIT);
+	 
+
+	  glClearColor(0.0f, 1.0f, 0.0f, 1.0f);  //background color
+	  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	  glUseProgram(programId);
-
-	  glUniform4f(colorUniformId, 1, 0, 0, 0); //To change color 
 	  glBindVertexArray(vaoId);
-
+	  glBindTexture(GL_TEXTURE_2D, textureId);
 
 	  //Prepare the perspective projection matrix
 	  glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 
+	  
 	  //Prepare the model matrix
 	  glm::mat4 model(1.0f);
-	  model = glm::translate(model, glm::vec3(0, 0, -2.5f));
+	  model = glm::translate(model, glm::vec3(0, 0, -2.0f));
+
+	  //Upload the model matrix
+	  glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+	  //Upload the projection matrix
+	  glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+	  glDrawArrays(GL_TRIANGLES, 0, 3);
+	  
+	  model = glm::mat4(1.0f);
+	  model = glm::translate(model, glm::vec3(0, 0, -5.5f));
 	  //model = glm::rotate(model, glm::radians(angle), glm::vec3(1, 0, 0)); //vec3(x, y, z) used to change rotate direction
-	  model = glm::rotate(model, glm::radians(angle), glm::vec3(0, 0, 1));
+	  model = glm::rotate(model, glm::radians(angle), glm::vec3(0, 1, 0));
 	  //model = glm::rotate(model, glm::radians(angle), glm::vec3(0, 1, 0));
 
 	  //Increase the float angle so next frame the triangle rotates further
-	  angle += 45.0f;
+	  angle += 5.0f;
 
 	  //Make sure the current program is bound
 
@@ -217,7 +267,21 @@ int main(int argc, char *argv[])
 	  //Upload the projection matrix
 	  glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
+	  
+
+
+	  //Alpha Blending
+	  glEnable(GL_BLEND);
+	  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	  //Depth Testing
+	  glEnable(GL_DEPTH_TEST);
+	  //Backface Culling
+	  glEnable(GL_CULL_FACE);
+
 	  glDrawArrays(GL_TRIANGLES, 0, 3);
+	  glDisable(GL_CULL_FACE);
+	  glDisable(GL_DEPTH_TEST);
+	  glDisable(GL_BLEND);
 
 	  //Prepare the orthographic projection matrix
 	  projection = glm::ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT, 0.0f, 1.0f);
