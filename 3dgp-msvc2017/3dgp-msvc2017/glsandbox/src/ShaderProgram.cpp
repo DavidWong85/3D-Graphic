@@ -120,8 +120,8 @@ ShaderProgram::ShaderProgram()
 	asLoc = glGetUniformLocation(ID, "ambientStrength");
 
 	glDetachShader(ID, vertexShaderId);
-	glDeleteShader(vertexShaderId);
 	glDetachShader(ID, fragmentShaderId);
+	glDeleteShader(vertexShaderId);
 	glDeleteShader(fragmentShaderId);
 }
 
