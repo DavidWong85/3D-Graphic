@@ -1,5 +1,21 @@
 #include "Texture.h"
 
+Texture::Texture(std::string _path)
+{
+	glGenTextures(GL_TEXTURE_2D, &ID);
+	if (!ID)
+	{
+		throw std::exception();
+	}
+
+	LoadTexture(_path);
+}
+
+Texture::~Texture()
+{
+
+}
+
 void Texture::LoadTexture(std::string _path)
 {
 	int w = 0;
@@ -21,6 +37,11 @@ void Texture::LoadTexture(std::string _path)
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Texture::Apply()
+{
+	glBindTexture(GL_TEXTURE_2D, ID);
 }
 
 GLuint Texture::getID()

@@ -1,2 +1,7 @@
-﻿  ShaderProgram.cpp
+﻿  main.cpp
+w:\university\3d-graphic - architecture\3dgp-msvc2017\3dgp-msvc2017\glsandbox\src\main.cpp(28): warning C4305: 'initializing': truncation from 'double' to 'float'
+w:\university\3d-graphic - architecture\3dgp-msvc2017\3dgp-msvc2017\glsandbox\src\main.cpp(85): warning C4305: 'argument': truncation from 'double' to 'float'
+w:\university\3d-graphic - architecture\3dgp-msvc2017\3dgp-msvc2017\glsandbox\src\main.cpp(100): warning C4244: 'initializing': conversion from 'Uint32' to 'float', possible loss of data
+w:\university\3d-graphic - architecture\3dgp-msvc2017\3dgp-msvc2017\glsandbox\src\main.cpp(121): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+w:\university\3d-graphic - architecture\3dgp-msvc2017\3dgp-msvc2017\glsandbox\src\main.cpp(122): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   GLSandbox.vcxproj -> W:\University\3D-Graphic - Architecture\3dgp-msvc2017\3dgp-msvc2017\glsandbox\x64\Debug\GLSandbox.exe

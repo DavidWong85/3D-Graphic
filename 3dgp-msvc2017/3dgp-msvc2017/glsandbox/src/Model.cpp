@@ -23,10 +23,22 @@ struct Face
 
 Model::Model(std::string path)
 {
+	vbp = std::make_shared<VertexBuffer>();
+	vbt = std::make_shared<VertexBuffer>();
+	vbn = std::make_shared<VertexBuffer>();
+	va = std::make_shared<VertexArray>();
+
+	this->vbp = vbp;
+	this->vbt = vbt;
+	this->vbn = vbn;
+	this->va = va;
+
+	/*
 	vbp = new VertexBuffer();
 	vbt = new VertexBuffer();
 	vbn = new VertexBuffer();
 	va = new VertexArray();
+	*/
 
 	std::ifstream f(path.c_str());
 
@@ -126,8 +138,6 @@ void Model::LoadModel(const std::string& path)
 	{
 		std::getline(file, currentLine);
 		if (currentLine.length() < 1) continue;
-		//std::cout << "Line [" << currentLine << "]" << std::endl;
-
 		std::vector<std::string> tokens;
 		Model::SplitStringWhiteSpace(currentLine, tokens);
 		if (tokens.size() < 1) continue;

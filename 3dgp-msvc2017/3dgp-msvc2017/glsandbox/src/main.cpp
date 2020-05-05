@@ -67,18 +67,18 @@ int main(int argc, char *argv[])
   bool quit = false;
 
 #pragma region Class
-  Texture* texture = new Texture();
-  ShaderProgram* SP = new ShaderProgram();
-  Model* mm = new Model("resources/curuthers.obj");  //Object Location
-  Model* mm2 = new Model("resources/cube.obj");
-  Light* light = new Light();
-  EventSystem* ES = new EventSystem();
-  MovementSystem* MS = new MovementSystem();
+  std::unique_ptr<Texture> texture1(new Texture("resources/Whiskers_diffuse.png"));
+  std::unique_ptr<Texture> texture2(new Texture("resources/UI.png"));
+  std::unique_ptr<ShaderProgram> SP(new ShaderProgram());
+  std::unique_ptr<Model> mm(new Model("resources/curuthers.obj"));
+  std::unique_ptr<Model> mm2(new Model("resources/cube.obj"));
+  std::unique_ptr<Light> light(new Light());
+  std::unique_ptr<EventSystem> ES(new EventSystem());
+  std::unique_ptr<MovementSystem> MS(new MovementSystem());
+
 #pragma endregion
 
   StartTime();
-
-  texture->LoadTexture("resources/Whiskers_diffuse.png"); //Texture Location
 
   light->setLP(glm::vec3(10, 10, 0));
   light->setLC(glm::vec3(1, 1, 1));
@@ -114,7 +114,8 @@ int main(int argc, char *argv[])
 	  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	  glUseProgram(SP->getID());
-	  glBindTexture(GL_TEXTURE_2D, texture->getID());
+	  texture1->Apply();
+	  //glBindTexture(GL_TEXTURE_2D, texture1->getID());
 
 #pragma region Camera Movement
 	  rotation -= ES->MouseHorizontal(width) * sensitivity;
@@ -196,9 +197,12 @@ int main(int argc, char *argv[])
 	  mm->Draw();
 	  glDisable(GL_CULL_FACE);
 	  glDisable(GL_BLEND);
+	  glDisable(GL_DEPTH_TEST);
 #pragma endregion
 
 #pragma region Draw 2
+	  texture2->Apply();
+
 	  //Prepare the orthographic projection matrix
 	  projection = glm::ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT, 0.0f, 1.0f);
 
@@ -223,10 +227,8 @@ int main(int argc, char *argv[])
 	  frame++;
   }
 
-  glDisable(GL_DEPTH_TEST);
   SDL_DestroyWindow(window);
   SDL_Quit();
 
   return 0;
 }
-

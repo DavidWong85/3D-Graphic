@@ -10,11 +10,17 @@ class VertexArray;
 
 class Model
 {
+	std::shared_ptr<VertexBuffer> vbp;
+	std::shared_ptr<VertexBuffer> vbt;
+	std::shared_ptr<VertexBuffer> vbn;
+	std::shared_ptr<VertexArray> va;
+
+	/*
 	VertexBuffer* vbp; //position
-	VertexBuffer* vbt; //texture
+	VertexBuffer* vbt; //texture coordinate
 	VertexBuffer* vbn; //normal
 	VertexArray* va;
-
+	*/
 public:
 	Model(std::string path);
 	~Model();

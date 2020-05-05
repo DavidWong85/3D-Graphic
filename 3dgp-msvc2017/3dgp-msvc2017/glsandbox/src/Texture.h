@@ -10,6 +10,9 @@ class Texture
 	GLuint ID;
 
 public:
+	Texture(std::string _path);
+	~Texture();
 	void LoadTexture(std::string _path);
+	void Apply();
 	GLuint getID();
 };

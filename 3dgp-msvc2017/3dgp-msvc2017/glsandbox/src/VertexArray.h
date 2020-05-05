@@ -13,7 +13,7 @@ class VertexArray
 public:
 	VertexArray();
 	~VertexArray();
-	void setBuffer(std::string _name, VertexBuffer* _value);
+	void setBuffer(std::string _name, std::shared_ptr<VertexBuffer> _value);
 	GLuint getID();
 
 };

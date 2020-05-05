@@ -15,12 +15,9 @@ VertexArray::~VertexArray()
 
 }
 
-void VertexArray::setBuffer(std::string _name, VertexBuffer* _value) 
+void VertexArray::setBuffer(std::string _name, std::shared_ptr<VertexBuffer> _value) 
 {
 	glBindVertexArray(ID);
-
-	// Bind the position VBO, assign it to position 0 on the bound
-	// VAO and flag it to be used
 	glBindBuffer(GL_ARRAY_BUFFER, _value->getID());
 	int position = 0;
 	if (_name == "a_Position")
