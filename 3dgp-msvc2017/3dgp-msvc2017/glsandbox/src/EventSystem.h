@@ -7,6 +7,7 @@
 
 class EventSystem
 {
+private:
 	SDL_Event event = { 0 };
 	std::vector<int> keys;
 	glm::vec2 MousePosition;

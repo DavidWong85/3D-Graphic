@@ -68,14 +68,13 @@ int main(int argc, char *argv[])
 
 #pragma region Class
   std::unique_ptr<Texture> texture1(new Texture("resources/Whiskers_diffuse.png"));
-  std::unique_ptr<Texture> texture2(new Texture("resources/UI.png"));
+  std::unique_ptr<Texture> texture2(new Texture("resources/sample.png"));
   std::unique_ptr<ShaderProgram> SP(new ShaderProgram());
   std::unique_ptr<Model> mm(new Model("resources/curuthers.obj"));
   std::unique_ptr<Model> mm2(new Model("resources/cube.obj"));
   std::unique_ptr<Light> light(new Light());
   std::unique_ptr<EventSystem> ES(new EventSystem());
   std::unique_ptr<MovementSystem> MS(new MovementSystem());
-
 #pragma endregion
 
   StartTime();
@@ -83,6 +82,7 @@ int main(int argc, char *argv[])
   light->setLP(glm::vec3(10, 10, 0));
   light->setLC(glm::vec3(1, 1, 1));
   light->setAS(0.1);
+  light->setSS(0.5);
 
   while (!quit)
   {
@@ -114,10 +114,9 @@ int main(int argc, char *argv[])
 	  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	  glUseProgram(SP->getID());
-	  texture1->Apply();
-	  //glBindTexture(GL_TEXTURE_2D, texture1->getID());
 
 #pragma region Camera Movement
+
 	  rotation -= ES->MouseHorizontal(width) * sensitivity;
 	  angle -= ES->MouseVertical(height) * sensitivity;
 	  if (angle >= 120.0f)
@@ -154,6 +153,7 @@ int main(int argc, char *argv[])
 	  glUniform3fv(SP->getlpLoc(), 1, glm::value_ptr(light->getLP()));
 	  glUniform3fv(SP->getlcLoc(), 1, glm::value_ptr(light->getLC()));
 	  glUniform1f(SP->getasLoc(), light->getAS());
+	  glUniform1f(SP->getssLoc(), light->getSS());
 	  //check light position
 	  if (ES->isKeyDown(SDLK_l))
 	  {
@@ -162,6 +162,7 @@ int main(int argc, char *argv[])
 #pragma endregion
 
 #pragma region Draw 1
+
 	  //Prepare the perspective projection matrix
 	  glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 
@@ -169,20 +170,17 @@ int main(int argc, char *argv[])
 	  glm::mat4 model = glm::mat4(1.0f);
 	  model = glm::translate(model, glm::vec3(0, 0, -10));
 
+	  //Prepare the view matrix
 	  glm::mat4 view = glm::mat4(1.0f);
 	  view = glm::translate(view, position);
 	  view = glm::rotate(view, glm::radians(rotation), glm::vec3(0, 1, 0));
 	  view = glm::rotate(view, glm::radians(angle / 2), glm::vec3(1, 0, 0));
 	  view = glm::inverse(view);
 
-	  //Make sure the current program is bound
-
 	  //Upload the model matrix
 	  glUniformMatrix4fv(SP->getmodelLoc(), 1, GL_FALSE, glm::value_ptr(model));
-
 	  //Upload the projection matrix
 	  glUniformMatrix4fv(SP->getprojectionLoc(), 1, GL_FALSE, glm::value_ptr(projection));
-
 	  //Upload the view matrix
 	  glUniformMatrix4fv(SP->getviewLoc(), 1, GL_FALSE, glm::value_ptr(view));
 
@@ -194,35 +192,37 @@ int main(int argc, char *argv[])
 	  //Backface Culling
 	  glEnable(GL_CULL_FACE);
 
+	  texture1->Apply();
 	  mm->Draw();
+
 	  glDisable(GL_CULL_FACE);
 	  glDisable(GL_BLEND);
 	  glDisable(GL_DEPTH_TEST);
+	  glUseProgram(0);
 #pragma endregion
 
 #pragma region Draw 2
+	  glUseProgram(SP->getUI());
 	  texture2->Apply();
-
 	  //Prepare the orthographic projection matrix
 	  projection = glm::ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT, 0.0f, 1.0f);
 
 	  //Prepare model matrix for orthographic projection
 	  model = glm::mat4(1.0f);
-	  model = glm::translate(model, glm::vec3(0, WINDOW_HEIGHT - 100, 0));
-	  model = glm::scale(model, glm::vec3(100, 100, 1));
+	  model = glm::translate(model, glm::vec3(0, WINDOW_HEIGHT - 200, 0));
+	  model = glm::scale(model, glm::vec3(200, 200, 1));
 
 	  //Upload the model matrix
-	  glUniformMatrix4fv(SP->getmodelLoc(), 1, GL_FALSE, glm::value_ptr(model));
-
-	  glUniformMatrix4fv(SP->getviewLoc(), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0)));
-
+	  glUniformMatrix4fv(SP->getmodelUILoc(), 1, GL_FALSE, glm::value_ptr(model));
 	  //Upload the projection matrix
-	  glUniformMatrix4fv(SP->getprojectionLoc(), 1, GL_FALSE, glm::value_ptr(projection));
+	  glUniformMatrix4fv(SP->getprojectionUILoc(), 1, GL_FALSE, glm::value_ptr(projection));
+	  //Upload the view matrix
+	  glUniformMatrix4fv(SP->getviewUILoc(), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0)));
 
 	  mm2->Draw();
+	  glUseProgram(0);
 #pragma endregion
 
-	  glUseProgram(0);
 	  SDL_GL_SwapWindow(window);
 	  frame++;
   }

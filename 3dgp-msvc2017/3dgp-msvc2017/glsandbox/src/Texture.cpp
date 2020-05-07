@@ -2,7 +2,7 @@
 
 Texture::Texture(std::string _path)
 {
-	glGenTextures(GL_TEXTURE_2D, &ID);
+	glGenTextures(1, &ID);
 	if (!ID)
 	{
 		throw std::exception();

@@ -5,6 +5,7 @@
 
 class VertexBuffer
 {
+private:
 	GLuint ID;
 	int Components;
 	std::vector<GLfloat> data;

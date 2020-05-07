@@ -7,6 +7,7 @@
 
 class Texture 
 {
+private:
 	GLuint ID;
 
 public:

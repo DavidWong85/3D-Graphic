@@ -5,24 +5,37 @@
 
 class ShaderProgram 
 {
+private:
 	GLuint ID;
-	GLint modelLoc;
-	GLint projectionLoc;
+	GLuint UI;
+	GLuint modelLoc;
+	GLuint projectionLoc;
 	GLuint viewLoc;
-	GLint lpLoc;
+
+	GLuint modelUILoc;
+	GLuint projectionUILoc;
+	GLuint viewUILoc;
+
+	GLuint lpLoc;
 	GLuint lcLoc;
 	GLuint asLoc;
+	GLuint ssLoc;
 	
 public:
 	ShaderProgram();
 	~ShaderProgram();
 
 	GLuint getID();
+	GLuint getUI();
 	GLuint getmodelLoc();
 	GLuint getprojectionLoc();
 	GLuint getviewLoc();
+	GLuint getmodelUILoc();
+	GLuint getprojectionUILoc();
+	GLuint getviewUILoc();
 	GLuint getlpLoc();
 	GLuint getlcLoc();
 	GLuint getasLoc();
+	GLuint getssLoc();
 	
 };

@@ -8,6 +8,7 @@ class VertexBuffer;
 
 class VertexArray
 {
+private:
 	GLuint ID;
 
 public:

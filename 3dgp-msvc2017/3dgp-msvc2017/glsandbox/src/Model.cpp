@@ -33,13 +33,6 @@ Model::Model(std::string path)
 	this->vbn = vbn;
 	this->va = va;
 
-	/*
-	vbp = new VertexBuffer();
-	vbt = new VertexBuffer();
-	vbn = new VertexBuffer();
-	va = new VertexArray();
-	*/
-
 	std::ifstream f(path.c_str());
 
 	if (!f.is_open())
